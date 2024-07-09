@@ -1,83 +1,64 @@
-from bank import *
-from register import *
+import constant
+from utils import custom_print
+from register import Registration
+from bank import Bank
 
-status = False
-print("Welcome to Mohit Banking Project")
-while True:
+# Main Banking Object
+obj = Registration()
+custom_print("Hello, World! Banking")
+
+
+def main() -> None:
+    """
+    Main Banking Function
+    @return: None
+    """
     try:
         register = int(input("1. SignUp\n"
-                             "2. SignIn - "))
+                             "2. SignIn: "))
         if register == 1 or register == 2:
             if register == 1:
-                SignUp()
-            if register == 2:
-                user = SignIn()
-                status = True
-                break
-        else:
-            print("Please Enter Valid Input From Options")
-
-    except ValueError:
-        print("Invalid Input Try Again with Numbers")
-
-account_number = db_query(
-    f"SELECT account_number FROM customers WHERE username = '{user}';")
-
-while status:
-    print(f"Welcome {user.capitalize()} Choose Your Banking Service\n")
-    try:
-        facility = int(input("1. Balance Enquiry\n"
-                             "2. Cash Deposit\n"
-                             "3. Cash Withdraw\n"
-                             "4. Fund Transfer\n"
-                             "5. Exit\n "
-                             ))
-        if facility >= 1 and facility <= 5:
+                user_signup_status = obj.sign_up()
+                if not user_signup_status:
+                    return
+                user_details = obj.sign_in()
+                if not user_details:
+                    return
+            elif register == 2:
+                user_details = obj.sign_in()
+                if not user_details:
+                    return
+        print(constant.CUSTOM_FORMAT)
+        facility = int(input("1. User Details\n"
+                             "2. Balance Enquiry\n"
+                             "3. Cash Credit\n"
+                             "4. Cash Debit\n"
+                             "5. Fund Transfer\n"
+                             "6. Exit: "))
+        bobj = Bank(user_details[1], user_details[-2])
+        if 1 <= facility <= 6:
             if facility == 1:
-                bobj = Bank(user, account_number[0][0])
-                bobj.balanceequiry()
-            elif facility == 2:
-                while True:
-                    try:
-                        amount = int(input("Enter Amount to Deposit"))
-                        bobj = Bank(user, account_number[0][0])
-                        bobj.deposit(amount)
-                        mydb.commit()
-                        break
-                    except ValueError:
-                        print("Enter Valid Input ie. Number")
-                        continue
-
+                bobj.user_details()
+            if facility == 2:
+                bobj.balance_enquiry()
             elif facility == 3:
-                while True:
-                    try:
-                        amount = int(input("Enter Amount to Withdraw"))
-                        bobj = Bank(user, account_number[0][0])
-                        bobj.withdraw(amount)
-                        mydb.commit()
-                        break
-                    except ValueError:
-                        print("Enter Valid Input ie. Number")
-                        continue
+                amount = int(input("Enter Amount to Deposit: "))
+                bobj.user_credit(amount)
             elif facility == 4:
-                while True:
-                    try:
-                        receive = int(input("Enter Receiver Account Number"))
-                        amount = int(input("Enter Money to Transfer"))
-                        bobj = Bank(user, account_number[0][0])
-                        bobj.fundtransfer(receive, amount)
-                        mydb.commit()
-                        break
-                    except ValueError:
-                        print("Enter Valid Input ie. Number")
-                        continue
+                amount = int(input("Enter Amount to Withdraw: "))
+                bobj.user_debit(amount)
             elif facility == 5:
-                print("Thanks For Using Banking Services")
-                status = False
+                receive = int(input("Enter Receiver Account Number: "))
+                amount = int(input("Enter Money to Transfer: "))
+                bobj.transfer_funds(receive, amount)
+            elif facility == 6:
+                custom_print("Thanks For Using Banking Services")
         else:
-            print("Please Enter Valid Input From Options")
-            continue
-
+            print(constant.VALID_INPUT)
     except ValueError:
-        print("Invalid Input Try Again with Numbers")
-        continue
+        print(constant.VALUE_ERROR)
+
+
+if __name__ == "__main__":
+    """Banking Module Main"""
+    main()
